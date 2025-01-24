@@ -28,10 +28,17 @@ class ProjectDateController extends Controller
             'memo' => 'required|string',
         ]);
 
-        $projectDate->update([
-            'memo' => $validated['memo'],
-            'finish' => new DateTime()
-        ]);
+        if($request->autosave){
+            $projectDate->update([
+                'memo' => $validated['memo']
+            ]);
+        } else {
+            $projectDate->update([
+                'memo' => $validated['memo'],
+                'finish' => new DateTime()
+            ]);
+        }
+
 
         return response()->json($projectDate);
     }

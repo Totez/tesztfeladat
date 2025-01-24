@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         clearTimer();
 
                         if(data.dates[0]){
+                            const memo = document.getElementById('modalProjectMemo');
                             const startTime = new Date(data.dates[0].start);
                             const endTime = new Date();
                             const elapsedTime = Math.max(0, endTime - startTime);
@@ -27,6 +28,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             const hours = Math.floor(elapsedTime / 3600000);
                             const minutes = Math.floor((elapsedTime % 3600000) / 60000);
                             const seconds = Math.floor((elapsedTime % 60000) / 1000);
+
+                            memo.value = data.dates[0].memo;
 
                             setCurrentProjectDateId(data.dates[0].id);
                             setTimer(hours, minutes, seconds);

@@ -5076,7 +5076,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _create_project__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_create_project__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _open_project__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./open_project */ "./resources/js/open_project.js");
 /* harmony import */ var _start_stop__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./start_stop */ "./resources/js/start_stop.js");
+/* harmony import */ var _memo_autosave__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./memo_autosave */ "./resources/js/memo_autosave.js");
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
+
 
 
 
@@ -5155,6 +5157,53 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /***/ }),
 
+/***/ "./resources/js/memo_autosave.js":
+/*!***************************************!*\
+  !*** ./resources/js/memo_autosave.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _state__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./state */ "./resources/js/state.js");
+
+var timeout;
+var memo;
+document.addEventListener("DOMContentLoaded", function () {
+  memo = document.getElementById('modalProjectMemo');
+  memo.addEventListener('input', function () {
+    clearTimeout(timeout);
+    timeout = setTimeout(saveChanges, 1000);
+  });
+});
+function saveChanges() {
+  if (memo.value !== "") {
+    var currentProjectDateId = (0,_state__WEBPACK_IMPORTED_MODULE_0__.getCurrentProjectDateId)();
+    fetch("/project-date/".concat(currentProjectDateId), {
+      method: 'PUT',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        memo: memo.value,
+        autosave: true
+      })
+    }).then(function (response) {
+      if (!response.ok) {
+        throw new Error('Failed to save finish time');
+      }
+      return response.json();
+    }).then(function (data) {
+      console.log('Finish time saved:', data);
+    })["catch"](function (error) {
+      console.error('Error:', error);
+    });
+  }
+}
+
+/***/ }),
+
 /***/ "./resources/js/open_project.js":
 /*!**************************************!*\
   !*** ./resources/js/open_project.js ***!
@@ -5179,12 +5228,14 @@ document.addEventListener("DOMContentLoaded", function () {
           document.getElementById('modalProjectName').innerText = data.name;
           (0,_state__WEBPACK_IMPORTED_MODULE_0__.clearTimer)();
           if (data.dates[0]) {
+            var memo = document.getElementById('modalProjectMemo');
             var startTime = new Date(data.dates[0].start);
             var endTime = new Date();
             var elapsedTime = Math.max(0, endTime - startTime);
             var hours = Math.floor(elapsedTime / 3600000);
             var minutes = Math.floor(elapsedTime % 3600000 / 60000);
             var seconds = Math.floor(elapsedTime % 60000 / 1000);
+            memo.value = data.dates[0].memo;
             (0,_state__WEBPACK_IMPORTED_MODULE_0__.setCurrentProjectDateId)(data.dates[0].id);
             (0,_state__WEBPACK_IMPORTED_MODULE_0__.setTimer)(hours, minutes, seconds);
             if (!data.dates[0].finish) {
